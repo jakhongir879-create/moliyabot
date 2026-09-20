@@ -33,7 +33,9 @@ export class ApiError extends Error {
 // Backend alohida joyda (masalan Render) bo'lsa, uning manzili qurish vaqtida VITE_API_URL orqali beriladi.
 // Bo'sh bo'lsa, backend shu manzilning o'zida ishlaydi (kompyuterdagi rejim).
 const API_BASE = String(import.meta.env.VITE_API_URL || "").trim().replace(/\/+$/, "");
-export const isRemoteApi = Boolean(API_BASE);
+// Panel kompyuterning o'zidan (localhost) emas, internetdagi manzildan (masalan Vercel) ochilgan bo'lsa ham "masofaviy" hisoblanadi
+const isLocalPage = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname);
+export const isRemoteApi = Boolean(API_BASE) || !isLocalPage;
 
 export async function api(path, { method = "GET", body, params, blob = false } = {}) {
   const url = new URL(`${API_BASE}/api/admin${path}`, window.location.origin);

@@ -24,7 +24,7 @@ Telegram ──► webhook ─────────────────�
 
 ## 2. Vercel — tayyor (bajarilgan ishlar)
 
-- Vercel loyihasi: **moliyabot** (hisob: `joxa`), GitHub repozitoriysiga ulangan. `main` ga har `git push` avtomatik yangi versiyani chiqaradi.
+- Vercel loyihasi: **moliyabot** (hisob: `joxa3`), GitHub repozitoriysiga ulangan. `main` ga har `git push` avtomatik yangi versiyani chiqaradi.
 - Mini App `/` da, Admin Panel `/admin/` da turadi (bitta loyiha, bitta manzil). Sozlamalar: [vercel.json](vercel.json), qurilish: [scripts/vercel-build.js](scripts/vercel-build.js).
 - **Faqat bitta narsa qoladi:** backend manzilini ulash (5-qadam, `VITE_API_URL`).
 - Vercel Hobby tarifi rasman **shaxsiy/notijorat** foydalanish uchun. Biznes uchun ishlatsangiz, Pro tarifi ($20/oy) tavsiya etiladi.
