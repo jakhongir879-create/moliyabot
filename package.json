@@ -1,0 +1,39 @@
+{
+  "name": "moliya-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Biznes uchun moliyaviy Telegram bot: Bot + Mini App + Admin Panel",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "install:all": "npm install && cd mini-app && npm install && cd ../admin-panel && npm install",
+    "build": "cd mini-app && npm run build && cd ../admin-panel && npm run build",
+    "db:generate": "prisma generate",
+    "db:migrate": "node scripts/prisma-cli.js migrate deploy",
+    "db:seed": "node prisma/seed.js",
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "db:studio": "node scripts/prisma-cli.js studio",
+    "demo": "node prisma/demo.js",
+    "demo:clear": "node prisma/demo.js clear"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "compression": "^1.8.2",
+    "dotenv": "^17.2.3",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "grammy": "^1.46.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "node-cron": "^4.2.1",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "prisma": "6.19.3"
+  }
+}

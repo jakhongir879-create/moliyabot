@@ -1,0 +1,214 @@
+// Moliya Bot — ma'lumotlar bazasi sxemasi (PostgreSQL / Neon)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------
+// ENUM'lar
+// ---------------------------------------------------------------
+
+enum Role {
+  OWNER // Egasi: hamma narsa
+  ACCOUNTANT // Buxgalter: moliya bo'yicha hamma narsa, xodimlarni boshqarmaydi
+  STAFF // Xodim: faqat kirim/chiqim yozadi
+}
+
+enum UserStatus {
+  PENDING // ruxsat kutmoqda
+  ACTIVE
+  BLOCKED
+}
+
+enum AccountType {
+  CASH
+  CARD
+  BANK
+  OTHER
+}
+
+enum TxType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum DebtType {
+  RECEIVABLE // Menga qarzdor
+  PAYABLE // Men qarzdorman
+}
+
+enum DebtStatus {
+  OPEN
+  CLOSED
+}
+
+// ---------------------------------------------------------------
+// JADVALLAR
+// ---------------------------------------------------------------
+
+// Foydalanuvchilar (Telegram orqali)
+model User {
+  id             Int        @id @default(autoincrement())
+  telegramId     BigInt     @unique
+  firstName      String
+  lastName       String?
+  username       String?
+  phone          String?
+  role           Role       @default(STAFF)
+  status         UserStatus @default(PENDING)
+  onboarded      Boolean    @default(false)
+  sendReceipts   Boolean    @default(true)
+  receiveReports Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  lastSeenAt     DateTime?
+
+  transactions Transaction[]
+  debts        Debt[]
+  debtPayments DebtPayment[]
+  auditLogs    AuditLog[]
+}
+
+// Hisoblar: naqd pul, karta, bank hisob raqami
+model Account {
+  id             Int         @id @default(autoincrement())
+  name           String
+  type           AccountType @default(CASH)
+  currency       String      @default("UZS")
+  initialBalance Decimal     @default(0) @db.Decimal(18, 2)
+  icon           String?
+  isArchived     Boolean     @default(false)
+  sortOrder      Int         @default(0)
+  createdAt      DateTime    @default(now())
+
+  outgoing Transaction[] @relation("TxAccount")
+  incoming Transaction[] @relation("TxToAccount")
+}
+
+// Toifalar: Savdo, Ijara, Maosh ...
+model Category {
+  id                Int          @id @default(autoincrement())
+  name              String
+  type              CategoryType
+  icon              String?
+  isSystem          Boolean      @default(false)
+  systemKey         String?      @unique
+  excludeFromProfit Boolean      @default(false)
+  isArchived        Boolean      @default(false)
+  sortOrder         Int          @default(0)
+  createdAt         DateTime     @default(now())
+
+  transactions Transaction[]
+
+  @@unique([type, name])
+}
+
+// Kirim / Chiqim / O'tkazma
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  type        TxType
+  amount      Decimal  @db.Decimal(18, 2)
+  currency    String
+  toAmount    Decimal? @db.Decimal(18, 2)
+  note        String?
+  date        DateTime @default(now())
+  accountId   Int
+  toAccountId Int?
+  categoryId  Int?
+  createdById Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  account   Account   @relation("TxAccount", fields: [accountId], references: [id])
+  toAccount Account?  @relation("TxToAccount", fields: [toAccountId], references: [id])
+  category  Category? @relation(fields: [categoryId], references: [id])
+  createdBy User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  principalOf Debt?        @relation("DebtPrincipal")
+  paymentOf   DebtPayment? @relation("PaymentTx")
+
+  @@index([date])
+  @@index([type, date])
+  @@index([accountId])
+  @@index([toAccountId])
+  @@index([categoryId])
+  @@index([createdById])
+}
+
+// Qarzlar (nasiya daftari)
+model Debt {
+  id            Int        @id @default(autoincrement())
+  type          DebtType
+  personName    String
+  phone         String?
+  amount        Decimal    @db.Decimal(18, 2)
+  currency      String     @default("UZS")
+  dueDate       DateTime?
+  note          String?
+  moneyMoved    Boolean    @default(false)
+  status        DebtStatus @default(OPEN)
+  closedAt      DateTime?
+  principalTxId Int?       @unique
+  createdById   Int?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  principalTx Transaction?  @relation("DebtPrincipal", fields: [principalTxId], references: [id], onDelete: SetNull)
+  createdBy   User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  payments    DebtPayment[]
+
+  @@index([status, dueDate])
+  @@index([type])
+}
+
+// Qarz bo'yicha to'lovlar
+model DebtPayment {
+  id            Int      @id @default(autoincrement())
+  debtId        Int
+  amount        Decimal  @db.Decimal(18, 2)
+  date          DateTime @default(now())
+  note          String?
+  transactionId Int?     @unique
+  createdById   Int?
+  createdAt     DateTime @default(now())
+
+  debt        Debt         @relation(fields: [debtId], references: [id], onDelete: Cascade)
+  transaction Transaction? @relation("PaymentTx", fields: [transactionId], references: [id], onDelete: SetNull)
+  createdBy   User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([debtId])
+}
+
+// Sozlamalar (kalit-qiymat)
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// Faoliyat jurnali: kim nimani o'zgartirdi / o'chirdi
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  actorName String
+  action    String
+  entity    String
+  entityId  Int?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}

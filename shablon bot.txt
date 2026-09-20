@@ -1,0 +1,114 @@
+Sen dunyodagi eng tajribali Node.js, React va PostgreSQL dasturchisisan. Men kod yozishni umuman bilmayman, shuning uchun menga Telegram Mini App va Admin Panel'dan iborat Pizza yetkazib berish loyihamizning oxirgi, eng mukammal versiyasini noldan yozib ber. Menga kod qanday ishlashini tushuntirib o'tirma, faqat tayyor va toza kodlarni taqdim et.
+
+**ENG ASOSIY QOIDALAR VA ISHNI BOSHLASH TARTIBI:**
+
+1. **Avval mendan ma'lumot so'ra:** Kod yozishga o'tishdan oldin, menga qisqacha yo'riqnoma ber va quyidagilarni taqdim etishimni kut:
+   - Neon (neon.tech) saytidan ro'yxatdan o'tib, yangi PostgreSQL bazasini yaratishimni va senga URI (connection string) manzilini tashlashimni so'ra.
+   - Telegram'da BotFather orqali qanday qilib yangi bot ochish va Bot Token olish bo'yicha juda tushunarli, qadam-baqadam qo'llanma ber va mendan tokenni so'ra.
+   *Men senga bu ma'lumotlarni berganimdan keyingina loyiha kodlarini yozishni boshla!*
+
+2. **Faqat Localhost (Deploy qilinmaydi):** Mini App, Admin Panel va Bot to'liq mening kompyuterimda (localhost) ishga tushishi kerak. Hech qanday serverga yoki xostingga deploy qilishning hojati yo'q. Telegram Mini App localhost'da ishlashi uchun `ngrok` dan foydalanishni va uni botga qanday ulashni oxirida tushuntirib berasan.
+
+3. **Loyiha qismlari:** Loyiha 3 ta qismdan iborat bo'ladi: Node.js Backend (Bot va API), Mijozlar uchun React Mini App va Ma'murlar uchun React Admin Panel.
+4. Ma'lumotlar bazasini boshqarish uchun eng oson ORM (Prisma) dan foydalan. Dizayn o'ta sodda, toza va minimalist bo'lishi shart. Oq fon va zamonaviy interfeys yarat.
+
+---
+
+### 1. BAZA (DATABASE) VA LOYIHA SOZLAMALARI
+
+- Prisma orqali quyidagi 3 ta jadvalni yarat:
+    - `User`: Mijozning Telegram ID'si, ismi, telefoni.
+    - `Product`: Pizzaning rasmi URL, nomi, ta'rifi, eski_narxi, yangi_narxi, kategoriyasi.
+    - `Order`: Kim buyurtma qildi (User ID), nimalar oldi (JSON), jami summa, lokatsiya, holati (kutilmoqda/yetkazildi) va sana.
+- Dastur ishga tushganda baza bo'sh qolmasligi uchun 4 ta pizzani (Margarita, Peperoni, Qazi pizza, Pishloqli) avtomatik bazaga yozib qo'yadigan `seed` skript qo'sh.
+
+---
+
+### 2. BACKEND (NODE.JS) ARXITEKTURASI
+
+Bot va API qismini aynan quyidagi papka tuzilishi bo'yicha yaratishing shart:
+
+project_root/
+├── src/
+│   ├── config/
+│   │   └── default.js             # Sozlamalar va o'zgaruvchilar
+│   ├── core/
+│   │   └── bot.js                 # Bot instansiyasini yaratish
+│   ├── database/
+│   │   └── connection.js          # PostgreSQL (Prisma) ulanishi
+│   ├── models/
+│   │   ├── User.js                # Prisma logikalari
+│   │   ├── Product.js
+│   │   └── Order.js
+│   ├── controllers/
+│   │   ├── botController.js       # Bot logikalari
+│   │   ├── cartController.js      # Mijoz API
+│   │   └── adminController.js     # Admin Panel uchun API (CRUD)
+│   ├── routes/
+│   │   ├── bot.routes.js          # Bot handlerlari
+│   │   ├── client.routes.js       # Mini App uchun API yo'llari
+│   │   └── admin.routes.js        # Admin Panel API yo'llari
+│   ├── middlewares/
+│   │   └── auth.middleware.js     # Validatsiya
+│   └── index.js                   # Asosiy ishga tushirish fayli
+├── .env
+├── package.json
+└── prisma/
+    └── schema.prisma
+
+---
+
+### 3. ADMIN PANEL WEBSAYTI (YANGI TALAB)
+
+Telegram botda adminlarga xabar bormaydi. Uning o'rniga localhost'da ishlaydigan alohida **Admin Web Dashboard** (React) yaratiladi. 
+
+**Admin Panel funksiyalari:**
+- **Buyurtmalar sahifasi (Orders):** Tushgan barcha yangi buyurtmalar ro'yxati real vaqtda (yoki sahifa yangilanganda) ko'rinib tursin. Har bir buyurtmada: Mijoz ismi, telefoni, nima olgani, jami summa va sanasi aniq ko'rinsin.
+- **Mahsulotlar sahifasi (Products CRUD):** Barcha pizzalar ro'yxati. Bu yerda admin yangi pizza qo'sha olishi, borlarini tahrirlashi (narxi, rasmi, nomi) va o'chira olishi shart.
+- UI toza, jadval (table) ko'rinishida bo'lsin.
+
+---
+
+### 4. MINI APP (REACT) INTERFEYSI VA UI/UX SHABLON
+
+Mini App (mijozlar uchun) quyidagi mantiq asosida ishlashi kerak:
+
+**1-Onboarding (Faqat bir marta ko'rinadi):**
+Ilovaga birinchi marta kirganda 3 ta qisqa vizual slayd.
+- Slayd 1: "Sizni ochlik qiynayaptimi? Biz issiqqina pizzalarni tezkor yetkazamiz."
+- Slayd 2: "Bu qanday ishlaydi? Tanlang, buyurtma bering va rohatlaning."
+- Slayd 3: "10,000+ odam allaqachon biz bilan."
+- Katta "Boshla" tugmasi.
+
+**2-Asosiy sahifa (Home):**
+- **Header:** Mijozning ismi va qisqa xush kelibsiz matni.
+- **Story bloki:** Eng tepada doira shaklidagi Instagram Stories kabi blok.
+- **Asosiy Vidjet (Hero):** Ekran o’rtasida "Yangi buyurtma berish" chaqiruvi.
+- **Bottom Navigation:** Bosh sahifa 🏠 | Katalog 🔍 | Savatcha 🛒 | Profil 👤
+
+**3-Katalog (Mahsulotlar):**
+- **Kategoriyalar filtri:** Gorizontal skroll qilinadigan teglar.
+- **Kartochkalar:** Rasm, Nom. Eski narx ustiga chizilgan va Yangi narx qizilda.
+- **Tezkor qo'shish:** Har bir kartada kichkina `➕` belgisi.
+
+**4-Mahsulot (Bottom Sheet):**
+Katalogdagi biror pizzani ustiga bosganda pastdan tepaga qalqib chiquvchi oyna.
+- **Vizual:** Pizzaning chiroyli render qilingan katta rasmi.
+- **Tarkibi:** Pizza ichida nimalar borligi aniq "bullet-point" larda.
+- **Yakuniy tugma:** "Savatchaga qo'shish — [Narx]" (Sticky CTA).
+
+**5-Savatcha va Profil:**
+- **Savatcha:** Tanlangan pizzalar. "Bunga qo'shimcha ravishda [Kola] ni atigi 5,000 so'mga qo'shasizmi?" degan "Switch" tugma. 'Buyurtmani tasdiqlash' bosilganda mijoz ma'lumotlari olinib, bazaga saqlanadi, Mini App yopiladi.
+- **Profil:** '📜 Mening buyurtmalarim' bo'limida eski xaridlar tarixi va 'Yana shundan buyurtma qilish' tugmasi.
+
+---
+
+### 5. BOTNING JAVOBI
+
+- Mijoz savatchadan buyurtmani tasdiqlab, Mini App yopilgandan so'ng, Bot unga to'g'ridan-to'g'ri: "Buyurtmangiz muvaffaqiyatli qabul qilindi! Kuryerimiz tez orada bog'lanadi 🍕" deb xabar bersin. Buyurtma to'g'ridan-to'g'ri bazaga tushadi va Admin Panelda ko'rinadi.
+
+### 6. YAKUNIY TALABLAR
+Loyiha kodlarini to'liq yozib bo'lgach, eng oxirida menga terminalda:
+1. Paketlarni o'rnatish komandalari.
+2. Prisma migratsiyalarini qanday qilish (va seed skriptini ishga tushirish).
+3. Backend va Frontend'ni (Mini App + Admin Panel) to'liq **localhost-da qanday yurgizish** hamda `ngrok` orqali local domen olib Telegram Botga qanday ulashni qadam-baqadam yozib ber.

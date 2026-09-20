@@ -1,0 +1,50 @@
+# ==========================================================
+#  Moliya Bot — .gitignore
+#  Bu ro'yxatdagi fayllar Git'ga (GitHub'ga) YUKLANMAYDI.
+# ==========================================================
+
+# ---------- MAXFIY MA'LUMOTLAR (hech qachon yuklanmasin!) ----------
+# .env ichida bot tokeni, Neon baza paroli va admin paroli bor.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---------- Paketlar (npm install qayta yuklab beradi) ----------
+node_modules/
+
+# ---------- Qurilgan fayllar (npm run build qayta yaratadi) ----------
+dist/
+build/
+
+# ---------- Yuklab olingan dasturlar ----------
+# Masalan tools/cloudflared.exe (52 MB). Kerak bo'lsa README.md dagi yo'riqnoma bo'yicha qayta yuklanadi.
+/tools/
+
+# ---------- Jurnallar va vaqtinchalik fayllar ----------
+*.log
+npm-debug.log*
+.npm/
+.cache/
+.vite/
+coverage/
+*.tmp
+*.bak
+*.dump
+
+# ---------- Moliyaviy hisobotlar (Excel) — maxfiy ma'lumot ----------
+*.xlsx
+*.xls
+~$*
+
+# ---------- Kompyuter va dasturlash muhiti fayllari ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# ---------- Claude Code shaxsiy sozlamalari ----------
+.claude/settings.local.json
