@@ -4,29 +4,29 @@
   "installCommand": "echo Frontend paketlari build bosqichida ornatiladi",
   "buildCommand": "node scripts/vercel-build.js",
   "outputDirectory": "vercel-dist",
-  "rewrites": [
-    { "source": "/admin/:path((?!assets/).*)", "destination": "/admin/index.html" }
-  ],
-  "headers": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
-      ]
+      "src": "/(.*)",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "X-Robots-Tag": "noindex, nofollow"
+      },
+      "continue": true
+    },
+    { "src": "/admin(.*)", "headers": { "X-Frame-Options": "DENY" }, "continue": true },
+    {
+      "src": "/assets/(.*)",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" },
+      "continue": true
     },
     {
-      "source": "/admin(.*)",
-      "headers": [{ "key": "X-Frame-Options", "value": "DENY" }]
+      "src": "/admin/assets/(.*)",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" },
+      "continue": true
     },
-    {
-      "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
-    },
-    {
-      "source": "/admin/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
-    }
+    { "handle": "filesystem" },
+    { "src": "/admin(?:/(?!assets/).*)?", "dest": "/admin/index.html" },
+    { "src": "/(.*)", "status": 404, "dest": "/404.html" }
   ]
 }

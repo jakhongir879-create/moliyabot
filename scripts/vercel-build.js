@@ -31,4 +31,30 @@ for (const app of apps) {
   run(`npm run build -- --outDir ${app.outDir} --emptyOutDir`, cwd);
 }
 
+// Mavjud bo'lmagan manzillar uchun sahifa (vercel.json oxirgi qoidasi 404 holati bilan shuni beradi)
+const notFoundPage = `<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Sahifa topilmadi</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; text-align: center; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; color: #111; }
+  h1 { margin: 0 0 8px; font-size: 20px; }
+  p { margin: 0; color: #6b7280; font-size: 15px; line-height: 1.5; }
+  @media (prefers-color-scheme: dark) { body { background: #111; color: #f3f4f6; } p { color: #9ca3af; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sahifa topilmadi</h1>
+  <p>Bunday manzil mavjud emas.<br />Ilovani Telegram'dagi botning menyu tugmasi orqali oching.</p>
+</main>
+</body>
+</html>
+`;
+fs.writeFileSync(path.join(out, "404.html"), notFoundPage);
+
 console.log(`\n✅ Tayyor: ${out}`);
