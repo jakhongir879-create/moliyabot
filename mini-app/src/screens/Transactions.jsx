@@ -149,7 +149,7 @@ export default function Transactions({ preset }) {
         </div>
       ) : null}
 
-      {!query.isLoading && !query.error && total > 0 ? (
+      {!query.isPending && !query.error && total > 0 ? (
         <div className="summary-strip">
           {Object.entries(totals).map(([cur, t]) => (
             <div className="summary-item" key={cur}>
@@ -162,7 +162,7 @@ export default function Transactions({ preset }) {
         </div>
       ) : null}
 
-      {query.isLoading ? (
+      {query.isPending ? (
         <ListSkeleton rows={7} />
       ) : query.error ? (
         <ErrorBox error={query.error} onRetry={query.refetch} />

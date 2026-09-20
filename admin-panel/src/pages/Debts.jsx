@@ -141,7 +141,7 @@ function DebtDetail({ id, onClose, onEdit }) {
   const { accounts } = useMeta();
   const qc = useQueryClient();
   const ui = useUI();
-  const { data: debt, isLoading, error, refetch } = useQuery({ queryKey: ["debt", id], queryFn: () => api(`/debts/${id}`) });
+  const { data: debt, isPending, error, refetch } = useQuery({ queryKey: ["debt", id], queryFn: () => api(`/debts/${id}`) });
 
   const [amount, setAmount] = useState("");
   const [accountId, setAccountId] = useState("");
@@ -150,7 +150,7 @@ function DebtDetail({ id, onClose, onEdit }) {
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState("");
 
-  if (isLoading) return <Modal title="Qarz" onClose={onClose}><Spinner /></Modal>;
+  if (isPending) return <Modal title="Qarz" onClose={onClose}><Spinner /></Modal>;
   if (error) return <Modal title="Qarz" onClose={onClose}><ErrorBox error={error} onRetry={refetch} /></Modal>;
 
   const receivable = debt.type === "RECEIVABLE";
@@ -293,7 +293,7 @@ export default function Debts() {
   const [q, setQ] = useState("");
   const [modal, setModal] = useState(null); // {kind: 'new' | 'edit' | 'detail', ...}
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: ["debts", tab, q],
     queryFn: () => api("/debts", { params: tab === "CLOSED" ? { status: "CLOSED", q } : { type: tab, status: "OPEN", q } }),
     refetchInterval: 20_000,
@@ -334,7 +334,7 @@ export default function Debts() {
       ) : null}
 
       <Card pad={false}>
-        {isLoading ? (
+        {isPending ? (
           <Spinner />
         ) : error ? (
           <ErrorBox error={error} onRetry={refetch} />

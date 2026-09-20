@@ -40,7 +40,7 @@ function describe(row) {
 
 export default function Audit() {
   const [page, setPage] = useState(1);
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: ["audit", page],
     queryFn: () => api("/audit", { params: { limit: PAGE, offset: (page - 1) * PAGE } }),
     placeholderData: keepPreviousData,
@@ -51,7 +51,7 @@ export default function Audit() {
     <>
       <p className="muted" style={{ marginBottom: 14 }}>Kim, qachon va nimani yaratgan, o'zgartirgan yoki o'chirganini shu yerda ko'rasiz.</p>
       <Card pad={false}>
-        {isLoading ? <Spinner /> : error ? <ErrorBox error={error} onRetry={refetch} /> : data.items.length ? (
+        {isPending ? <Spinner /> : error ? <ErrorBox error={error} onRetry={refetch} /> : data.items.length ? (
           <>
             <div className="table-wrap">
               <table className="table">

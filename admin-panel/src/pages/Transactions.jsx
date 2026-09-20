@@ -102,7 +102,7 @@ export default function Transactions() {
   };
   const customReady = filters.period !== "custom" || (filters.from && filters.to);
 
-  const { data, isLoading, error, refetch, isFetching } = useQuery({
+  const { data, isPending, error, refetch, isFetching } = useQuery({
     queryKey: ["transactions", params, page],
     queryFn: () => api("/transactions", { params: { ...params, limit: PAGE, offset: (page - 1) * PAGE } }),
     enabled: Boolean(customReady),
@@ -207,7 +207,7 @@ export default function Transactions() {
       <Card pad={false}>
         {!customReady ? (
           <EmptyState icon="📅" title="Sana oralig'ini tanlang" />
-        ) : isLoading ? (
+        ) : isPending ? (
           <Spinner />
         ) : error ? (
           <ErrorBox error={error} onRetry={refetch} />

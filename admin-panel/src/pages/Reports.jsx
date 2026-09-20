@@ -65,7 +65,7 @@ export default function Reports() {
   const enabled = period !== "custom" || Boolean(range.from && range.to);
   const params = { period, ...(period === "custom" ? range : {}) };
 
-  const { data, isLoading, error, refetch, isFetching } = useQuery({
+  const { data, isPending, error, refetch, isFetching } = useQuery({
     queryKey: ["report", params],
     queryFn: () => api("/reports", { params }),
     enabled,
@@ -111,7 +111,7 @@ export default function Reports() {
 
       {!enabled ? (
         <Card><EmptyState icon="📅" title="Sana oralig'ini tanlang" /></Card>
-      ) : isLoading && !data ? (
+      ) : isPending && !data ? (
         <Spinner />
       ) : error && !data ? (
         <ErrorBox error={error} onRetry={refetch} />

@@ -15,14 +15,14 @@ export default function Dashboard() {
   const [currency, setCurrency] = useState(null);
   const [newTx, setNewTx] = useState(false);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: ["dashboard", 30],
     queryFn: () => api("/dashboard", { params: { days: 30 } }),
     refetchInterval: 15_000,
   });
   const system = useQuery({ queryKey: ["system"], queryFn: () => api("/system"), refetchInterval: 10_000 });
 
-  if (isLoading) return <Spinner />;
+  if (isPending) return <Spinner />;
   if (error) return <ErrorBox error={error} onRetry={refetch} />;
 
   const cur = currency && data.currencies.includes(currency) ? currency : data.primaryCurrency;

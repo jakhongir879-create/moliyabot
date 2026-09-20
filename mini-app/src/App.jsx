@@ -187,7 +187,7 @@ function Root() {
   }, []);
 
   if (!hasTelegram()) return <NoAccess code="NO_INIT_DATA" />;
-  if (boot.isLoading) return <Splash />;
+  if (boot.isPending) return <Splash />;
   if (boot.error) {
     if (AUTH_CODES.has(boot.error.code) || boot.error.code === "NO_BACKEND") return <NoAccess code={boot.error.code} />;
     return (

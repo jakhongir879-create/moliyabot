@@ -292,7 +292,7 @@ const STATUS_BADGE = { PENDING: ["warn", "Kutmoqda"], ACTIVE: ["success", "Faol"
 export function UsersSheet({ sheetId, closing }) {
   const ui = useUI();
   const run = useAction();
-  const { data, isLoading, error, refetch } = useQuery({ queryKey: ["users"], queryFn: () => api("/users") });
+  const { data, isPending, error, refetch } = useQuery({ queryKey: ["users"], queryFn: () => api("/users") });
   const [openId, setOpenId] = useState(null);
 
   const update = async (user, patch, message) => {
@@ -311,7 +311,7 @@ export function UsersSheet({ sheetId, closing }) {
         <br />
         <b>Xodim</b> — faqat kirim/chiqim yozadi. <b>Buxgalter</b> — hisobot, qarz va hisoblarni ham ko'radi.
       </div>
-      {isLoading ? <ListSkeleton rows={3} /> : error ? <ErrorBox error={error} onRetry={refetch} /> : (
+      {isPending ? <ListSkeleton rows={3} /> : error ? <ErrorBox error={error} onRetry={refetch} /> : (
         <div className="card-list">
           {data.items.map((u) => {
             const [tone, label] = STATUS_BADGE[u.status];

@@ -23,7 +23,7 @@ function SettingRow({ title, text, children }) {
 export default function Settings() {
   const qc = useQueryClient();
   const ui = useUI();
-  const { data, isLoading, error, refetch } = useQuery({ queryKey: ["settings"], queryFn: () => api("/settings") });
+  const { data, isPending, error, refetch } = useQuery({ queryKey: ["settings"], queryFn: () => api("/settings") });
   const system = useQuery({ queryKey: ["system"], queryFn: () => api("/system"), refetchInterval: 10_000 });
 
   const [name, setName] = useState("");
@@ -49,7 +49,7 @@ export default function Settings() {
     }
   };
 
-  if (isLoading) return <Spinner />;
+  if (isPending) return <Spinner />;
   if (error) return <ErrorBox error={error} onRetry={refetch} />;
 
   const sys = system.data;

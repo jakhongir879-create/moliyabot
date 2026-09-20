@@ -12,7 +12,7 @@ export default function Debts() {
   const [type, setType] = useState("RECEIVABLE");
   const [status, setStatus] = useState("OPEN");
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isPending, error, refetch } = useQuery({
     queryKey: ["debts", type, status],
     queryFn: () => api("/debts", { params: { type, status } }),
   });
@@ -47,7 +47,7 @@ export default function Debts() {
         <Chip active={status === "CLOSED"} onClick={() => setStatus("CLOSED")}>Yopilgan</Chip>
       </div>
 
-      {isLoading ? (
+      {isPending ? (
         <ListSkeleton rows={4} />
       ) : error ? (
         <ErrorBox error={error} onRetry={refetch} />

@@ -77,7 +77,7 @@ export function Accounts() {
   const ui = useUI();
   const [modal, setModal] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
-  const { data, isLoading, error, refetch } = useQuery({ queryKey: ["accounts", showArchived], queryFn: () => api("/accounts", { params: { all: showArchived ? 1 : undefined } }) });
+  const { data, isPending, error, refetch } = useQuery({ queryKey: ["accounts", showArchived], queryFn: () => api("/accounts", { params: { all: showArchived ? 1 : undefined } }) });
 
   const remove = async (a) => {
     const ok = await ui.confirm({
@@ -113,7 +113,7 @@ export function Accounts() {
         <button className="btn btn-primary" onClick={() => setModal({})}><Plus size={17} /> Yangi hisob</button>
       </div>
       <Card pad={false}>
-        {isLoading ? <Spinner /> : error ? <ErrorBox error={error} onRetry={refetch} /> : data.items.length ? (
+        {isPending ? <Spinner /> : error ? <ErrorBox error={error} onRetry={refetch} /> : data.items.length ? (
           <div className="table-wrap">
             <table className="table">
               <thead><tr><th>Hisob</th><th>Turi</th><th>Valyuta</th><th className="right">Boshlang'ich qoldiq</th><th className="right">Joriy qoldiq</th><th>Holat</th><th className="actions-col" /></tr></thead>
@@ -235,7 +235,7 @@ export function Categories() {
   const qc = useQueryClient();
   const ui = useUI();
   const [modal, setModal] = useState(null);
-  const { data, isLoading, error, refetch } = useQuery({ queryKey: ["categories-all"], queryFn: () => api("/categories", { params: { all: 1 } }) });
+  const { data, isPending, error, refetch } = useQuery({ queryKey: ["categories-all"], queryFn: () => api("/categories", { params: { all: 1 } }) });
 
   const remove = async (c) => {
     const ok = await ui.confirm({
@@ -254,7 +254,7 @@ export function Categories() {
     }
   };
 
-  if (isLoading) return <Spinner />;
+  if (isPending) return <Spinner />;
   if (error) return <ErrorBox error={error} onRetry={refetch} />;
 
   return (

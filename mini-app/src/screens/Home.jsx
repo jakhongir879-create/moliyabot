@@ -12,7 +12,7 @@ import { tgUser } from "../lib/telegram";
 export default function Home({ go }) {
   const { me, business } = useApp();
   const ui = useUI();
-  const { data, isLoading, error, refetch } = useDashboard();
+  const { data, isPending, error, refetch } = useDashboard();
   const tg = tgUser();
   const name = me?.firstName || tg?.first_name || "do'stim";
 
@@ -26,7 +26,7 @@ export default function Home({ go }) {
         </div>
       </header>
 
-      {isLoading ? (
+      {isPending ? (
         <HomeSkeleton />
       ) : error ? (
         <ErrorBox error={error} onRetry={refetch} />

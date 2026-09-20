@@ -8,7 +8,7 @@ const STATUS = { PENDING: ["warn", "Kutmoqda"], ACTIVE: ["success", "Faol"], BLO
 export default function Users() {
   const qc = useQueryClient();
   const ui = useUI();
-  const { data, isLoading, error, refetch } = useQuery({ queryKey: ["users"], queryFn: () => api("/users"), refetchInterval: 15_000 });
+  const { data, isPending, error, refetch } = useQuery({ queryKey: ["users"], queryFn: () => api("/users"), refetchInterval: 15_000 });
 
   const update = async (user, patch, message) => {
     try {
@@ -30,7 +30,7 @@ export default function Users() {
     if (ok) update(user, { status: "BLOCKED" }, user.status === "PENDING" ? "Rad etildi" : "Bloklandi");
   };
 
-  if (isLoading) return <Spinner />;
+  if (isPending) return <Spinner />;
   if (error) return <ErrorBox error={error} onRetry={refetch} />;
 
   const pending = data.items.filter((u) => u.status === "PENDING");

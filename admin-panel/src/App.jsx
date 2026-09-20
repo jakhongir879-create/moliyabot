@@ -51,7 +51,7 @@ function Layout({ onLogout }) {
 
   const current = NAV.find((n) => (n.end ? location.pathname === "/" : location.pathname.startsWith(n.to)));
 
-  if (meta.isLoading) return <div className="boot"><Spinner /></div>;
+  if (meta.isPending) return <div className="boot"><Spinner /></div>;
   if (meta.error) {
     return (
       <div className="boot">
