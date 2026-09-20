@@ -1,0 +1,43 @@
+# Render.com "Blueprint": backend'ni (Bot + API) bir necha bosish bilan yaratadi.
+# Render -> New + -> Blueprint -> GitHub repozitoriyni tanlang -> 3 ta maxfiy qiymatni kiriting.
+# Batafsil qo'llanma: DEPLOY.md
+services:
+  - type: web
+    name: moliyabot-api
+    runtime: node
+    # Neon bazangiz AQSH sharqida (us-east-2 = Ohio). Server bazaga yaqin bo'lsa, javoblar tez bo'ladi.
+    region: ohio
+    # "free" - sinov uchun (15 daqiqa so'rov bo'lmasa uxlab qoladi). Doimiy ishlashi uchun "starter" (oyiga ~7$) tavsiya etiladi.
+    plan: free
+    branch: main
+    buildCommand: npm ci && npx prisma generate && npm run db:migrate
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Telegram yangilanishlarni shu serverga yuboradi (bepul serverni ham uyg'otadi)
+      - key: BOT_MODE
+        value: webhook
+      - key: TUNNEL
+        value: "off"
+      # Admin Panel (Vercel) shu serverning admin API'siga murojaat qiladi. Parol kamida 12 belgi bo'lishi shart.
+      - key: ADMIN_REMOTE
+        value: "true"
+      - key: API_RATE_LIMIT
+        value: "1500"
+      - key: BUSINESS_NAME
+        value: Mening biznesim
+      # Mini App / Admin Panel (Vercel) manzillari. Bot menyusidagi "Ilova" tugmasi shunga ulanadi.
+      - key: WEBAPP_URL
+        value: https://moliyabot-taupe.vercel.app
+      - key: CORS_ORIGINS
+        value: https://moliyabot-taupe.vercel.app,https://moliyabot-joxa3.vercel.app
+      # --- Quyidagi 3 ta maxfiy qiymatni Render o'zi so'raydi (bu faylga yozilmaydi!) ---
+      - key: BOT_TOKEN
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

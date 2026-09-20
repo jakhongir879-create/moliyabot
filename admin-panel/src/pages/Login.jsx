@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Lock } from "lucide-react";
-import { api, setToken } from "../api";
+import { api, isRemoteApi, setToken } from "../api";
 
 export default function Login({ onLogin }) {
   const [password, setPassword] = useState("");
@@ -27,7 +27,11 @@ export default function Login({ onLogin }) {
       <form className="login-card" onSubmit={submit}>
         <div className="login-logo">💼</div>
         <h1>Moliya — Admin Panel</h1>
-        <p className="muted">Kirish uchun .env faylidagi ADMIN_PASSWORD parolini kiriting</p>
+        <p className="muted">
+          {isRemoteApi
+            ? "Kirish uchun serverdagi (Render) ADMIN_PASSWORD parolini kiriting"
+            : "Kirish uchun .env faylidagi ADMIN_PASSWORD parolini kiriting"}
+        </p>
         <label className="field">
           <span className="field-label">Parol</span>
           <div className="input-icon">
@@ -37,7 +41,9 @@ export default function Login({ onLogin }) {
         </label>
         {error ? <div className="form-error">{error}</div> : null}
         <button className="btn btn-primary btn-lg" disabled={!password || busy}>{busy ? "Tekshirilmoqda..." : "Kirish"}</button>
-        <p className="login-foot muted">Bu panel faqat shu kompyuterdan (localhost) ochiladi.</p>
+        <p className="login-foot muted">
+          {isRemoteApi ? "Faqat ruxsat berilgan kishilar uchun. Parolni hech kimga bermang." : "Bu panel faqat shu kompyuterdan (localhost) ochiladi."}
+        </p>
       </form>
     </div>
   );

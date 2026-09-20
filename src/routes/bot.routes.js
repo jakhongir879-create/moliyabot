@@ -1,7 +1,22 @@
 // Bot handlerlarini ulash
 const h = require("../controllers/botController");
 
+// Telegram bir yangilanishni ikki marta yuborsa (webhook qayta urinishi), ikkinchisini e'tiborsiz qoldiramiz:
+// aks holda bitta operatsiya ikki marta yozilib ketishi mumkin.
+const seenUpdates = new Set();
+const seenOrder = [];
+function dedupeUpdates(ctx, next) {
+  const id = ctx.update && ctx.update.update_id;
+  if (id === undefined) return next();
+  if (seenUpdates.has(id)) return undefined;
+  seenUpdates.add(id);
+  seenOrder.push(id);
+  if (seenOrder.length > 2000) seenUpdates.delete(seenOrder.shift());
+  return next();
+}
+
 function registerBotRoutes(bot) {
+  bot.use(dedupeUpdates);
   bot.use(h.access);
 
   // Buyruqlar

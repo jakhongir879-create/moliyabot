@@ -962,6 +962,7 @@ button.menu-row:active { background: var(--bg-soft); }
 
 .splash { min-height: 100dvh; display: grid; place-content: center; justify-items: center; }
 .splash-logo { font-size: 56px; animation: pulse 1.4s ease-in-out infinite; }
+.splash-hint { max-width: 280px; margin-top: 22px; text-align: center; color: var(--text-3); font-size: 13.5px; line-height: 1.5; animation: fade 0.4s var(--ease); }
 @keyframes pulse { 50% { transform: scale(1.08); opacity: 0.8; } }
 
 .empty { display: grid; justify-items: center; gap: 6px; text-align: center; padding: 38px 24px; }

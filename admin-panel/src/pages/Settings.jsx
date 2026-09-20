@@ -103,7 +103,7 @@ export default function Settings() {
       <Card title="Tizim holati">
         {sys ? (
           <div className="sys-list">
-            <div className="sys-row"><i className={cx("dot", sys.bot.online ? "on" : "off")} /><span>Telegram bot</span><b>{sys.bot.online ? `@${sys.bot.username} — ishlayapti` : `ulanmagan${sys.bot.error ? ` (${sys.bot.error})` : ""}`}</b></div>
+            <div className="sys-row"><i className={cx("dot", sys.bot.online ? "on" : "off")} /><span>Telegram bot</span><b>{sys.bot.online ? `@${sys.bot.username} — ishlayapti${sys.bot.mode ? ` (${sys.bot.mode})` : ""}` : `ulanmagan${sys.bot.error ? ` (${sys.bot.error})` : ""}`}</b></div>
             <div className="sys-row"><i className={cx("dot", sys.webApp.url ? "on" : "warn")} /><span>Mini App manzili</span><b className="break">{sys.webApp.url ? `${sys.webApp.url} (${SOURCE_LABEL[sys.webApp.source] || sys.webApp.source})` : "tunnel kutilmoqda"}</b></div>
             <div className="sys-row"><i className={cx("dot", sys.database.ok ? "on" : "off")} /><span>Baza</span><b>{sys.database.ok ? "ulangan" : "xato"}</b></div>
             <div className="sys-row"><i className="dot on" /><span>Ish vaqti</span><b>{Math.floor(sys.uptimeSeconds / 3600)} soat {Math.floor((sys.uptimeSeconds % 3600) / 60)} daqiqa</b></div>

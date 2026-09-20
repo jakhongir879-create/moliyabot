@@ -176,6 +176,11 @@ ngrok birinchi ochishda «You are about to visit...» sahifasini ko'rsatishi mum
 - `.env` faylini, bot tokenini va Neon parolini hech kimga bermang.
 - Barcha o'zgartirish va o'chirishlar Admin Panel → **Jurnal** bo'limida saqlanadi.
 
+## Internetga joylash (kompyuterdan mustaqil ishlashi uchun)
+
+Mini App va Admin Panel **Vercel**'da, bot va API **Render**'da ishlashi mumkin — kompyuter o'chiq bo'lsa ham.
+Vercel qismi joylangan; Render uchun tayyor sozlama (`render.yaml`) va bosqichma-bosqich reja bor: **[DEPLOY.md](DEPLOY.md)**.
+
 ## Yangi versiyaga o'tish / qayta o'rnatish
 
 Papkani boshqa kompyuterga ko'chirsangiz: `npm run install:all` (paketlar), `npm run build`, `.env` ni to'ldirish, `npm run db:setup`, `npm start`.

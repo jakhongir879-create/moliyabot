@@ -17,6 +17,8 @@ node_modules/
 # ---------- Qurilgan fayllar (npm run build qayta yaratadi) ----------
 dist/
 build/
+vercel-dist/
+.vercel/
 
 # ---------- Yuklab olingan dasturlar ----------
 # Masalan tools/cloudflared.exe (52 MB). Kerak bo'lsa README.md dagi yo'riqnoma bo'yicha qayta yuklanadi.

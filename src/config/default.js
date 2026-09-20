@@ -47,6 +47,14 @@ function normalizeWebAppUrl(raw) {
   return /^https:\/\//i.test(value) ? value : "";
 }
 
+// "https://a.vercel.app, https://b.com/" -> ["https://a.vercel.app", "https://b.com"]
+function parseList(raw) {
+  return String(raw || "")
+    .split(",")
+    .map((s) => s.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+}
+
 // Adashtirib bo'ladigan belgilarsiz (0/O, 1/I) 8 belgilik tasodifiy kod
 function makeSetupCode() {
   const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -57,6 +65,9 @@ function makeSetupCode() {
 
 const botToken = String(process.env.BOT_TOKEN || "").trim();
 
+// Webhook manzili va maxfiy kaliti bot tokenidan hosil qilinadi (qo'shimcha sozlama kerak emas)
+const webhookHash = crypto.createHmac("sha256", "moliya-telegram-webhook").update(botToken || "no-token").digest("hex");
+
 const config = {
   env: process.env.NODE_ENV || "development",
   root: ROOT,
@@ -65,6 +76,12 @@ const config = {
   botToken,
   // false qilinsa server ishlaydi, lekin bot Telegram'dan xabar olmaydi (sinov uchun)
   botPolling: String(process.env.BOT_POLLING ?? "true").toLowerCase() !== "false",
+  // "polling": bot Telegram'dan o'zi so'rab turadi (kompyuterda). "webhook": Telegram yangilanishlarni serverga yuboradi (Render).
+  botMode: String(process.env.BOT_MODE || "polling").trim().toLowerCase() === "webhook" ? "webhook" : "polling",
+  // Serverning internetdagi manzili (webhook uchun). Render buni RENDER_EXTERNAL_URL orqali o'zi beradi.
+  publicUrl: normalizeWebAppUrl(process.env.PUBLIC_URL || process.env.RENDER_EXTERNAL_URL),
+  webhookSecret: webhookHash.slice(0, 48),
+  webhookPath: `/telegram/webhook/${webhookHash.slice(48, 64)}`,
 
   databaseUrl: normalizeDatabaseUrl(process.env.DATABASE_URL),
 
@@ -75,6 +92,16 @@ const config = {
   jwtExpiresIn: "12h",
 
   webAppUrl: normalizeWebAppUrl(process.env.WEBAPP_URL),
+
+  // Mini App / Admin Panel boshqa manzilda (masalan Vercel) turganda API'ga murojaat qilishga ruxsat etilgan manzillar (vergul bilan)
+  corsOrigins: parseList(process.env.CORS_ORIGINS).filter((o) => /^https?:\/\//i.test(o)),
+  // true bo'lsa, Admin API internetdan ham ochiladi (Render'da kerak). Faqat kuchli parol bilan yoqing!
+  adminRemote: String(process.env.ADMIN_REMOTE || "").trim().toLowerCase() === "true",
+  // Faqat API rejimi (Render): Mini App va Admin Panel fayllari bu serverda yo'q, ular Vercel'da
+  apiOnly: String(process.env.API_ONLY || (process.env.RENDER ? "true" : "false")).trim().toLowerCase() === "true",
+  // Bir daqiqada bitta manzildan (IP) ruxsat etiladigan API so'rovlari soni
+  apiRateLimit: Math.max(60, toInt(process.env.API_RATE_LIMIT, 400)),
+
   // "auto": ngrok bo'lsa uni, bo'lmasa tools/cloudflared.exe ni o'zi ishga tushiradi. "off": tunnel ochilmaydi.
   tunnel: String(process.env.TUNNEL || "auto").trim().toLowerCase() === "off" ? "off" : "auto",
   ownerTelegramId: process.env.OWNER_TELEGRAM_ID ? String(process.env.OWNER_TELEGRAM_ID).trim() : "",
@@ -125,6 +152,12 @@ config.validate = function validate() {
   }
   if (config.adminPassword.length < 8) {
     problems.push("ADMIN_PASSWORD kiritilmagan yoki 8 belgidan qisqa. .env faylida o'zingiz uchun parol belgilang.");
+  }
+  if (config.adminRemote && config.adminPassword.length < 12) {
+    problems.push("ADMIN_REMOTE=true bo'lsa, ADMIN_PASSWORD kamida 12 belgi bo'lishi shart (panel internetga ochiladi).");
+  }
+  if (config.botMode === "webhook" && !config.publicUrl) {
+    problems.push("BOT_MODE=webhook uchun serverning https manzili kerak: PUBLIC_URL yozing (Render'da RENDER_EXTERNAL_URL o'zi beriladi).");
   }
   return problems;
 };

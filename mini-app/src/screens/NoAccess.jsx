@@ -26,6 +26,11 @@ const MESSAGES = {
     title: "Ruxsat yo'q",
     text: "Sizga bu ilovadan foydalanishga ruxsat berilmagan.",
   },
+  NO_BACKEND: {
+    icon: "🔌",
+    title: "Server ulanmagan",
+    text: "Server hozir javob bermayapti: u uyg'onayotgan bo'lishi yoki backend manzili hali sozlanmagan bo'lishi mumkin. 1 daqiqadan so'ng qayta urinib ko'ring.",
+  },
 };
 
 export default function NoAccess({ code, message }) {

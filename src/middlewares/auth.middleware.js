@@ -104,6 +104,8 @@ const PROXY_HEADERS = [
 
 // Admin Panel faqat localhost orqali ochiladi. Tunnel (internet) orqali kelgan so'rovlar rad etiladi.
 function localOnly(req, res, next) {
+  // Render kabi serverda ADMIN_REMOTE=true bo'lsa, Admin API internetdan ham ochiladi (parol + JWT bilan himoyalangan)
+  if (config.adminRemote) return next();
   const host = String(req.hostname || "").toLowerCase();
   const viaProxy = PROXY_HEADERS.some((h) => Boolean(req.get(h)));
   if (!LOCAL_HOSTS.has(host) || viaProxy) return res.status(404).type("text").send("Not found");

@@ -88,6 +88,13 @@ function ConfirmView() {
 }
 
 function Splash() {
+  // Bepul serverlar uxlab qolishi mumkin: uyg'onishi 30-60 soniya olsa, foydalanuvchiga tushuntiramiz
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setSlow(true), 6000);
+    return () => clearTimeout(id);
+  }, []);
+
   return (
     <div className="splash">
       <div className="splash-logo">💼</div>
@@ -95,6 +102,7 @@ function Splash() {
         <Skeleton h={12} />
         <Skeleton h={12} w="70%" style={{ justifySelf: "center" }} />
       </div>
+      {slow ? <p className="splash-hint">Server uyg'onmoqda... Birinchi ochilish 30–60 soniya olishi mumkin, iltimos kuting.</p> : null}
     </div>
   );
 }
@@ -181,7 +189,7 @@ function Root() {
   if (!hasTelegram()) return <NoAccess code="NO_INIT_DATA" />;
   if (boot.isLoading) return <Splash />;
   if (boot.error) {
-    if (AUTH_CODES.has(boot.error.code)) return <NoAccess code={boot.error.code} />;
+    if (AUTH_CODES.has(boot.error.code) || boot.error.code === "NO_BACKEND") return <NoAccess code={boot.error.code} />;
     return (
       <div className="no-access">
         <ErrorBox error={boot.error} onRetry={boot.refetch} />

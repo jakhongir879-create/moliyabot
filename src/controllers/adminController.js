@@ -52,7 +52,7 @@ async function system(_req, res) {
     version: pkg.version,
     uptimeSeconds: Math.round(process.uptime()),
     database: { ok: databaseOk },
-    bot: { online: state.botOnline, username: state.botUsername, name: state.botName, error: state.botError },
+    bot: { online: state.botOnline, mode: state.botMode, username: state.botUsername, name: state.botName, error: state.botError },
     webApp: {
       url: state.webAppUrl,
       source: state.webAppSource,

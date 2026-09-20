@@ -5,6 +5,8 @@ const express = require("express");
 const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
+const cors = require("cors");
+const { webhookCallback } = require("grammy");
 const config = require("./config/default");
 const clientRoutes = require("./routes/client.routes");
 const adminRoutes = require("./routes/admin.routes");
@@ -39,7 +41,18 @@ function serveSpa(dir, name) {
   router.use((req, res, next) => {
     if (req.method !== "GET" && req.method !== "HEAD") return next();
     if (path.extname(req.path)) return next();
-    if (!fs.existsSync(indexFile)) return res.status(503).type("html").send(notBuiltPage(name));
+    if (!fs.existsSync(indexFile)) {
+      // Render'da faqat API ishlaydi: Mini App va Admin Panel Vercel'da turadi
+      if (config.apiOnly) {
+        return res.json({
+          ok: true,
+          app: "moliya-bot",
+          mode: "api",
+          message: "Moliya Bot API ishlayapti. Mini App va Admin Panel alohida manzilda (Vercel) joylashgan.",
+        });
+      }
+      return res.status(503).type("html").send(notBuiltPage(name));
+    }
     res.setHeader("Cache-Control", "no-store");
     return res.sendFile(indexFile);
   });
@@ -47,10 +60,21 @@ function serveSpa(dir, name) {
   return router;
 }
 
+// Boshqa manzilda (Vercel) turgan Mini App / Admin Panelga API'dan foydalanishga ruxsat beradi
+const corsMiddleware = cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, true); // bir xil manzil yoki server-server so'rovi
+    return callback(null, config.corsOrigins.includes(origin.replace(/\/+$/, "")));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  exposedHeaders: ["Content-Disposition"],
+  maxAge: 86400,
+});
+
 function createApp() {
   const app = express();
   app.disable("x-powered-by");
-  app.set("trust proxy", 1); // ngrok bitta oraliq server
+  app.set("trust proxy", 1); // ngrok / Render / Cloudflare oldida bitta oraliq server bor
 
   app.use(
     helmet({
@@ -66,11 +90,25 @@ function createApp() {
 
   app.get("/health", (_req, res) => res.json({ ok: true, app: "moliya-bot" }));
 
+  // Webhook rejimi (Render): Telegram yangilanishlarni shu manzilga yuboradi; maxfiy kalit sarlavhada tekshiriladi
+  if (config.botMode === "webhook") {
+    const bot = require("./core/bot");
+    app.post(
+      config.webhookPath,
+      webhookCallback(bot, "express", {
+        secretToken: config.webhookSecret,
+        timeoutMilliseconds: 9000,
+        onTimeout: "return",
+      })
+    );
+  }
+
+  app.use("/api", corsMiddleware);
   app.use(
     "/api",
     rateLimit({
       windowMs: 60 * 1000,
-      limit: 400,
+      limit: config.apiRateLimit,
       standardHeaders: true,
       legacyHeaders: false,
       message: { error: "Juda ko'p so'rov yuborildi. Biroz kuting.", code: "RATE_LIMIT" },

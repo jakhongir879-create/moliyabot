@@ -106,7 +106,22 @@ async function main() {
     bot.botInfo = botInfo;
     await setupProfile(bot);
 
-    if (config.botPolling) {
+    if (config.botMode === "webhook") {
+      // Render: Telegram yangilanishlarni serverning https manziliga yuboradi (server uxlab qolsa, so'rov uni uyg'otadi)
+      state.botMode = "webhook";
+      try {
+        await bot.api.setWebhook(`${config.publicUrl}${config.webhookPath}`, {
+          secret_token: config.webhookSecret,
+          allowed_updates: ["message", "callback_query"],
+        });
+        state.botOnline = true;
+        line("✅ Webhook o'rnatildi: Telegram yangilanishlarni shu serverga yuboradi.");
+      } catch (err) {
+        state.botError = err.description || err.message;
+        line(`❌ Webhook o'rnatib bo'lmadi: ${state.botError}`);
+      }
+    } else if (config.botPolling) {
+      state.botMode = "polling";
       bot
         .start({
           allowed_updates: ["message", "callback_query"],
@@ -139,9 +154,14 @@ async function main() {
   rule();
   line("  💼  MOLIYA BOT TAYYOR");
   rule();
-  line(`  Bot          : ${botInfo ? `@${botInfo.username}` : "ulanmagan"}`);
-  line(`  Admin Panel  : http://localhost:${config.port}/admin`);
-  line(`  Mini App     : ${tunnel.describe()}`);
+  line(`  Bot          : ${botInfo ? `@${botInfo.username}` : "ulanmagan"} (${state.botMode || "o'chiq"})`);
+  if (config.apiOnly) {
+    line(`  Rejim        : faqat API (Mini App va Admin Panel Vercel'da)`);
+    line(`  Mini App     : ${config.webAppUrl || "WEBAPP_URL kiritilmagan"}`);
+  } else {
+    line(`  Admin Panel  : http://localhost:${config.port}/admin`);
+    line(`  Mini App     : ${tunnel.describe()}`);
+  }
   rule();
   if (!ownerExists && botInfo) {
     line();
@@ -164,7 +184,7 @@ async function main() {
     try {
       require("./services/scheduler.service").stop();
       require("./services/tunnel.service").stop();
-      if (state.botOnline) await bot.stop();
+      if (state.botOnline && state.botMode === "polling") await bot.stop();
       server.close();
       await db.disconnect();
     } catch {

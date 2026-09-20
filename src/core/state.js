@@ -4,6 +4,7 @@ const state = {
   botUsername: "",
   botName: "",
   botOnline: false,
+  botMode: "", // "polling" | "webhook"
   botError: "",
   webAppUrl: "",
   webAppSource: "", // "env" | "ngrok" | "cloudflared" | ""

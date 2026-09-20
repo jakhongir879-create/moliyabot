@@ -30,8 +30,13 @@ export class ApiError extends Error {
   }
 }
 
+// Backend alohida joyda (masalan Render) bo'lsa, uning manzili qurish vaqtida VITE_API_URL orqali beriladi.
+// Bo'sh bo'lsa, backend shu manzilning o'zida ishlaydi (kompyuterdagi rejim).
+const API_BASE = String(import.meta.env.VITE_API_URL || "").trim().replace(/\/+$/, "");
+export const isRemoteApi = Boolean(API_BASE);
+
 export async function api(path, { method = "GET", body, params, blob = false } = {}) {
-  const url = new URL(`/api/admin${path}`, window.location.origin);
+  const url = new URL(`${API_BASE}/api/admin${path}`, window.location.origin);
   if (params) {
     for (const [key, value] of Object.entries(params)) {
       if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, value);
@@ -49,7 +54,13 @@ export async function api(path, { method = "GET", body, params, blob = false } =
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new ApiError("Server bilan aloqa yo'q. Dastur (npm start) ishlayotganini tekshiring.", 0, "NETWORK");
+    throw new ApiError(
+      isRemoteApi
+        ? "Server bilan aloqa yo'q. Backend (Render) ishlayotganini tekshiring; bepul tarifda u uxlab qolgan bo'lishi mumkin, 1 daqiqadan so'ng qayta urinib ko'ring."
+        : "Server bilan aloqa yo'q. Dastur (npm start) ishlayotganini tekshiring.",
+      0,
+      "NETWORK"
+    );
   }
 
   if (blob && res.ok) {
@@ -62,6 +73,14 @@ export async function api(path, { method = "GET", body, params, blob = false } =
   if (res.status === 401 && data?.code === "ADMIN_AUTH") {
     clearToken();
     window.dispatchEvent(new Event("admin-logout"));
+  }
+  // JSON emas (HTML/bo'sh) javob: backend ulanmagan, uxlayapti yoki manzil noto'g'ri
+  if (data === null) {
+    throw new ApiError(
+      "Server bilan bog'lanib bo'lmadi. Backend manzili (VITE_API_URL) sozlanmagan yoki server o'chiq/uyg'onmoqda.",
+      res.status,
+      "NO_BACKEND"
+    );
   }
   if (!res.ok) throw new ApiError(data?.error || "Xatolik yuz berdi", res.status, data?.code);
   return data;
