@@ -11,7 +11,7 @@ Hammasi **sizning kompyuteringizda (localhost)** ishlaydi. Hech qayerga joylash 
 
 | Qism | Nima qiladi |
 |---|---|
-| **Bot** | `+500 ming savdo` yoki `-120 ming taksi` deb yozing — bot kirim/chiqimni yozadi. Balans, hisobot, qarzlar, Excel. Har kuni kechqurun kunlik hisobot, ertalab qarz eslatmasi. |
+| **Bot** | `+500 ming savdo` yoki `-120 ming taksi` deb yozing — bot kirim/chiqimni yozadi. **Ovozli xabar** ham qabul qiladi («besh yuz ming so'm savdo»). Balans, hisobot, qarzlar, Excel. Har kuni kechqurun kunlik hisobot, ertalab qarz eslatmasi. |
 | **Mini App** | Bosh sahifa (balans, hisoblar, grafik), operatsiyalar, qarzlar, hisobotlar (grafiklar + Excel), profil. Egasi, buxgalter va xodim uchun turli ruxsatlar. |
 | **Admin Panel** | Kompyuterda: boshqaruv paneli, operatsiyalar jadvali (filtr, qidiruv, tahrirlash), qarzlar, hisoblar, toifalar, hisobotlar, xodimlar, sozlamalar, faoliyat jurnali. |
 
@@ -118,6 +118,10 @@ ngrok birinchi ochishda «You are about to visit...» sahifasini ko'rsatishi mum
 | `75 000 benzin` | avval kirim/chiqimligini so'raydi |
 
 «ming» = 1 000, «mln» = 1 000 000. Bot toifani izohdan topadi yoki tugmalar bilan so'raydi. Xato yozilsa — **«↩️ Bekor qilish»** tugmasi bor.
+
+**Ovozli xabar:** botga mikrofon tugmasi bilan ovoz yuboring, masalan «besh yuz ming so'm savdo», «yuz yigirma ming so'm taksi chiqim», «bir yarim million so'm ijara to'ladim». Bot eshitganini matn qilib ko'rsatadi va **«✅ To'g'ri»** bosilgandan keyingina yozadi (ovoz xato tanilishi mumkin, shuning uchun summani doim tekshiring). Ovoz kompyuterning o'zida tanib olinadi (oflayn, bepul, hech qayerga yuborilmaydi).
+
+Ovoz tanish uchun bir marta fayllar yuklab olinadi (~66 MB): `npm run voice:setup`, so'ng botni qayta ishga tushiring. Fayllar `models/` papkasiga tushadi (GitHub'ga yuborilmaydi). O'chirish: `.env` ga `STT=off`. Uzunligi: eng ko'pi bilan 60 soniya (`STT_MAX_SECONDS`).
 
 **Buyruqlar:** `/kirim` `/chiqim` `/balans` `/hisobot` `/bugun` `/qarzlar` `/ilova` `/yordam`
 

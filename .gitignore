@@ -23,6 +23,8 @@ vercel-dist/
 # ---------- Yuklab olingan dasturlar ----------
 # Masalan tools/cloudflared.exe (52 MB). Kerak bo'lsa README.md dagi yo'riqnoma bo'yicha qayta yuklanadi.
 /tools/
+# Ovozli xabarlar uchun yuklab olinadigan Vosk kutubxonasi va o'zbek tili modeli (npm run voice:setup)
+/models/
 
 # ---------- Jurnallar va vaqtinchalik fayllar ----------
 *.log

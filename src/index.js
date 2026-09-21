@@ -162,6 +162,8 @@ async function main() {
     line(`  Admin Panel  : http://localhost:${config.port}/admin`);
     line(`  Mini App     : ${tunnel.describe()}`);
   }
+  const voice = require("./services/stt.service").status();
+  line(`  Ovozli xabar : ${voice.ok ? "✅ yoqilgan (o'zbek tili, oflayn)" : `o'chiq — ${voice.reason}`}`);
   rule();
   if (!ownerExists && botInfo) {
     line();

@@ -206,4 +206,10 @@ function matchCategoryByText(categories, text) {
   return best ? best.category : null;
 }
 
-module.exports = { parseQuickEntry, parseNumberString, matchCategoryByText };
+// "so'm", "dollar", "$" kabi valyuta so'zimi?
+const isCurrencyWord = (word) => {
+  const w = String(word || "").toLowerCase();
+  return Boolean(WORD_TO_CURRENCY[w] || CURRENCY_SYMBOLS[w]);
+};
+
+module.exports = { parseQuickEntry, parseNumberString, matchCategoryByText, isCurrencyWord };

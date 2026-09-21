@@ -13,6 +13,7 @@
     "install:all": "npm install && cd mini-app && npm install && cd ../admin-panel && npm install",
     "build": "cd mini-app && npm run build && cd ../admin-panel && npm run build",
     "build:vercel": "node scripts/vercel-build.js",
+    "voice:setup": "node scripts/voice-setup.js",
     "db:generate": "prisma generate",
     "db:migrate": "node scripts/prisma-cli.js migrate deploy",
     "db:seed": "node prisma/seed.js",
@@ -23,6 +24,7 @@
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
+    "adm-zip": "^0.6.1",
     "compression": "^1.8.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -32,7 +34,9 @@
     "grammy": "^1.46.0",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
+    "koffi": "^2.16.3",
     "node-cron": "^4.2.1",
+    "ogg-opus-decoder": "^1.7.5",
     "prisma": "6.19.3",
     "zod": "^4.1.0"
   }

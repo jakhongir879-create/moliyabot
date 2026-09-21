@@ -47,12 +47,15 @@ function registerBotRoutes(bot) {
   bot.callbackQuery(/^qa:(\w+):(\d+)$/, h.guard(h.onDraftAccount));
   bot.callbackQuery(/^qx:(\w+)$/, h.guard(h.onCancel));
   bot.callbackQuery(/^qu:(\d+)$/, h.guard(h.onUndo));
+  bot.callbackQuery(/^vy:(\w+)$/, h.guard(h.onVoiceYes));
+  bot.callbackQuery(/^vn:(\w+)$/, h.guard(h.onVoiceNo));
   bot.callbackQuery(/^rp:(\w+)$/, h.guard(h.requireManager(h.onReportPeriod)));
   bot.callbackQuery(/^rx:(\w+)$/, h.guard(h.requireManager(h.onReportExport)));
   bot.callbackQuery(/^usr:(\d+):(STAFF|ACCOUNTANT|BLOCK)$/, h.guard(h.onUserDecision));
 
   // Boshqa xabarlar
   bot.on("message:text", h.guard(h.onText));
+  bot.on("message:voice", h.guard(h.onVoice));
   bot.on("message", h.guard(h.onOther));
 
   bot.catch(h.onError);

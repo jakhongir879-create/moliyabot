@@ -163,3 +163,9 @@ Render'ning bepul serveri 15 daqiqa so'rov bo'lmasa **uxlab qoladi**; uyg'onishi
 - Mini App so'rovlari Telegram imzosi bilan tekshiriladi; ro'yxatdan o'tmagan odam ma'lumotni ko'ra olmaydi.
 - Bepul tarif cheklovlari: Render Free — uxlab qoladi, 512 MB xotira, oyiga 750 soat. Vercel Hobby — notijorat foydalanish uchun.
 - Ikki joyda bir vaqtda bot ishlatmang: Render ishlayotganda kompyuterdagi botni yoqmang. Sinov kerak bo'lsa, BotFather'da alohida test bot oching (`/newbot`).
+
+## 7. Ovozli xabarlar Render'da
+
+Ovozli xabarlarni tanish (Vosk + o'zbek modeli) kompyuterda `npm run voice:setup` bilan yoqiladi. Render'da bu fayllar yo'q, shuning uchun u yerda bot ovozli xabarga «hozircha yoqilmagan, matn yuboring» deb javob beradi (bot va Mini App'ga ta'sir qilmaydi).
+
+Render'da ham yoqmoqchi bo'lsangiz: Build Command oxiriga ` && npm run voice:setup` qo'shing. Diqqat: ovoz modeli ishlaganda ~200 MB xotira oladi (10 daqiqa ishlatilmasa bo'shatiladi), Render'ning 512 MB xotirasi bilan ilova bilan birga tor keladi. Xotira yetmasa, Render'da xato/qayta ishga tushish ko'rinsa, tarifni 2 GB xotirali (Standard) ga o'tkazing yoki `STT=off` qo'ying.

@@ -15,6 +15,8 @@ const { buildWorkbook } = require("../services/export.service");
 const notify = require("../services/notify.service");
 const { actorFromUser } = require("../middlewares/auth.middleware");
 const { parseQuickEntry, matchCategoryByText } = require("../utils/amountParser");
+const { parseVoiceEntry } = require("../utils/voiceEntry");
+const stt = require("../services/stt.service");
 const { LABELS, mainKeyboard, openAppKeyboard } = require("../utils/keyboards");
 const { renderReport, renderBalances, renderDebtSummary } = require("../utils/reportText");
 const { esc } = require("../utils/html");
@@ -32,6 +34,7 @@ const drafts = new Map(); // tezkor kiritish qoralamalari
 const awaiting = new Map(); // "Kirim" / "Chiqim" tugmasidan keyin summa kutilmoqda
 const setupAttempts = new Map(); // egasini aniqlash kodini taxmin qilish urinishlari
 const accessNotified = new Map(); // ruxsat so'rovi egasiga oxirgi marta qachon yuborilgani
+const voiceDrafts = new Map(); // ovozli xabardan olingan, tasdiq kutayotgan yozuvlar
 
 const DRAFT_TTL = 30 * 60 * 1000;
 const AWAIT_TTL = 10 * 60 * 1000;
@@ -39,6 +42,7 @@ const AWAIT_TTL = 10 * 60 * 1000;
 setInterval(() => {
   const now = Date.now();
   for (const [id, d] of drafts) if (now - d.at > DRAFT_TTL) drafts.delete(id);
+  for (const [id, v] of voiceDrafts) if (now - v.at > DRAFT_TTL) voiceDrafts.delete(id);
   for (const [id, a] of awaiting) if (now - a.at > AWAIT_TTL) awaiting.delete(id);
 }, 5 * 60 * 1000).unref();
 
@@ -265,6 +269,12 @@ function help(ctx) {
     "",
     "«ming» = 1 000, «mln» = 1 000 000. Belgi yozmasangiz, kirim yoki chiqimligini so'rayman.",
     "",
+    ...(stt.isAvailable()
+      ? [
+          "🎙 <b>Ovozli xabar:</b> «besh yuz ming so'm savdo» deb aytib yuboring. Eshitganimni ko'rsataman, siz tasdiqlaysiz.",
+          "",
+        ]
+      : []),
     "<b>Buyruqlar:</b>",
     "/kirim — kirim yozish",
     "/chiqim — chiqim yozish",
@@ -534,7 +544,88 @@ async function onText(ctx) {
 }
 
 function onOther(ctx) {
-  return ctx.reply("Faqat matnli xabarlarni tushunaman. Masalan: <code>+500 ming savdo</code>", HTML);
+  return ctx.reply("Faqat matnli va ovozli xabarlarni tushunaman. Masalan: <code>+500 ming savdo</code>", HTML);
+}
+
+// ---------------------------------------------------------------
+// Ovozli xabarlar
+// ---------------------------------------------------------------
+
+const VOICE_HINT = "Masalan: «besh yuz ming so'm savdo» yoki «yuz yigirma ming so'm taksi chiqim».";
+
+async function downloadTelegramFile(filePath) {
+  const res = await fetch(`https://api.telegram.org/file/bot${config.botToken}/${filePath}`);
+  if (!res.ok) throw new Error(`Telegram faylni bermadi (HTTP ${res.status})`);
+  return Buffer.from(await res.arrayBuffer());
+}
+
+async function onVoice(ctx) {
+  const voice = ctx.message.voice;
+  const availability = stt.status();
+  if (!availability.ok) {
+    console.warn(`[ovoz] o'chiq: ${availability.reason}`);
+    return ctx.reply("🎙 Ovozli xabarni tanish hozircha yoqilmagan. Iltimos, matn bilan yozing: <code>+500 ming savdo</code>", HTML);
+  }
+  if (voice.duration > config.sttMaxSeconds) {
+    return ctx.reply(`🎙 Ovozli xabar juda uzun. ${config.sttMaxSeconds} soniyagacha, qisqa qilib yuboring.`);
+  }
+
+  await ctx.replyWithChatAction("typing").catch(() => undefined);
+  const file = await ctx.api.getFile(voice.file_id);
+  const audio = await downloadTelegramFile(file.file_path);
+
+  let heard;
+  try {
+    heard = await stt.transcribe(audio);
+  } catch (err) {
+    console.error("[ovoz] tanib bo'lmadi:", err && err.stack ? err.stack : err);
+    return ctx.reply("🎙 Ovozni tanib bo'lmadi. Iltimos, qayta yuboring yoki matn bilan yozing.");
+  }
+  console.log(`[ovoz] ${ctx.from.id}: «${heard}»`);
+
+  if (!heard) return ctx.reply("🎙 Hech narsa eshitilmadi. Aniqroq va balandroq gapirib, qayta yuboring.");
+
+  const wait = awaiting.get(ctx.from.id);
+  const { parsed } = parseVoiceEntry(heard, { defaultType: wait && Date.now() - wait.at < AWAIT_TTL ? wait.type : null });
+  if (!parsed) {
+    return ctx.reply(`🎙 Eshitdim: <i>«${esc(heard)}»</i>\n\nLekin summani topa olmadim. Summani aniq ayting. ${VOICE_HINT}`, HTML);
+  }
+
+  // Ovoz xato tanilishi mumkin, shuning uchun summani saqlashdan oldin tasdiqlatamiz
+  const id = newDraftId();
+  voiceDrafts.set(id, { userId: ctx.user.id, parsed, at: Date.now() });
+  const kb = new InlineKeyboard().text("✅ To'g'ri", `vy:${id}`).text("❌ Noto'g'ri", `vn:${id}`);
+  return ctx.reply(`🎙 Eshitdim: <i>«${esc(heard)}»</i>\n\n${draftHeader(parsed)}\n\nTo'g'rimi?`, { ...HTML, reply_markup: kb });
+}
+
+function getVoiceDraft(ctx, id) {
+  const v = voiceDrafts.get(id);
+  if (!v) {
+    ctx.answerCallbackQuery({ text: "Bu so'rov eskirgan. Qaytadan ayting.", show_alert: true });
+    return null;
+  }
+  if (v.userId !== ctx.user.id) {
+    ctx.answerCallbackQuery({ text: "Bu so'rov sizniki emas", show_alert: true });
+    return null;
+  }
+  return v;
+}
+
+async function onVoiceYes(ctx) {
+  const v = getVoiceDraft(ctx, ctx.match[1]);
+  if (!v) return undefined;
+  voiceDrafts.delete(ctx.match[1]);
+  awaiting.delete(ctx.from.id);
+  await ctx.answerCallbackQuery();
+  return beginEntry(ctx, v.parsed);
+}
+
+async function onVoiceNo(ctx) {
+  const v = getVoiceDraft(ctx, ctx.match[1]);
+  if (!v) return undefined;
+  voiceDrafts.delete(ctx.match[1]);
+  await ctx.answerCallbackQuery({ text: "Bekor qilindi" });
+  return respond(ctx, "❌ Bekor qilindi. Qayta ayting yoki matn bilan yozing.", null, { edit: true });
 }
 
 // ---------------------------------------------------------------
@@ -688,6 +779,9 @@ module.exports = {
   promptEntry,
   entryCommand,
   onText,
+  onVoice,
+  onVoiceYes,
+  onVoiceNo,
   onOther,
   onUserDecision,
   onDraftType,

@@ -102,6 +102,11 @@ const config = {
   // Bir daqiqada bitta manzildan (IP) ruxsat etiladigan API so'rovlari soni
   apiRateLimit: Math.max(60, toInt(process.env.API_RATE_LIMIT, 400)),
 
+  // Ovozli xabarlarni matnga aylantirish (oflayn, Vosk). "off" bo'lsa, ovozli xabarlar o'chiriladi.
+  sttEnabled: String(process.env.STT || "auto").trim().toLowerCase() !== "off",
+  // Bitta ovozli xabarning eng uzun davomiyligi (soniya)
+  sttMaxSeconds: Math.min(300, Math.max(5, toInt(process.env.STT_MAX_SECONDS, 60))),
+
   // "auto": ngrok bo'lsa uni, bo'lmasa tools/cloudflared.exe ni o'zi ishga tushiradi. "off": tunnel ochilmaydi.
   tunnel: String(process.env.TUNNEL || "auto").trim().toLowerCase() === "off" ? "off" : "auto",
   ownerTelegramId: process.env.OWNER_TELEGRAM_ID ? String(process.env.OWNER_TELEGRAM_ID).trim() : "",
