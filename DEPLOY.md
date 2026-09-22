@@ -164,8 +164,26 @@ Render'ning bepul serveri 15 daqiqa so'rov bo'lmasa **uxlab qoladi**; uyg'onishi
 - Bepul tarif cheklovlari: Render Free — uxlab qoladi, 512 MB xotira, oyiga 750 soat. Vercel Hobby — notijorat foydalanish uchun.
 - Ikki joyda bir vaqtda bot ishlatmang: Render ishlayotganda kompyuterdagi botni yoqmang. Sinov kerak bo'lsa, BotFather'da alohida test bot oching (`/newbot`).
 
-## 7. Ovozli xabarlar Render'da
+## 7. Ovozli xabarlar
 
-Ovozli xabarlarni tanish (Vosk + o'zbek modeli) kompyuterda `npm run voice:setup` bilan yoqiladi. Render'da bu fayllar yo'q, shuning uchun u yerda bot ovozli xabarga «hozircha yoqilmagan, matn yuboring» deb javob beradi (bot va Mini App'ga ta'sir qilmaydi).
+Ovozli xabarni matnga aylantirishning ikki usuli bor. Ikkalasi ham bir xil ishlaydi: bot eshitganini yozib, «✅ To'g'ri / ❌ Noto'g'ri» deb so'raydi — noto'g'ri tanilsa, hech narsa saqlanmaydi.
 
-Render'da ham yoqmoqchi bo'lsangiz: Build Command oxiriga ` && npm run voice:setup` qo'shing. Diqqat: ovoz modeli ishlaganda ~200 MB xotira oladi (10 daqiqa ishlatilmasa bo'shatiladi), Render'ning 512 MB xotirasi bilan ilova bilan birga tor keladi. Xotira yetmasa, Render'da xato/qayta ishga tushish ko'rinsa, tarifni 2 GB xotirali (Standard) ga o'tkazing yoki `STT=off` qo'ying.
+### 7.1. Bepul, oflayn (Vosk)
+
+Kompyuterda: `npm run voice:setup` (bir marta, ~66 MB yuklaydi). Render'da: Build Command oxiriga ` && npm run voice:setup` qo'shing.
+
+**Cheklov:** aniqligi past — sof, qisqa gapda («besh yuz ming so'm savdo») yaxshi ishlaydi, lekin uzun/tabiiy gapda ko'p xato qiladi (o'zbek tili uchun Vosk'da faqat shu «yengil» model bor, kattarog'i yo'q). Diqqat: ishlaganda ~200 MB xotira oladi, Render'ning bepul 512 MB xotirasi bilan tor keladi — xato/qayta ishga tushish ko'rinsa, `STT=off` qiling yoki 7.2-bo'limga o'ting.
+
+### 7.2. Aniqroq, pullik (Yandex SpeechKit)
+
+Ovoz Yandex serveriga yuboriladi va u yerda tanib olinadi — ancha aniqroq, lekin: (1) internetga ulanish shart, (2) Yandex Cloud'da hisob va to'lov kartasi kerak (foydalanish oz bo'lsa, oyiga narxi odatda juda past; ba'zan sinov krediti beriladi — aniq shartlarni ro'yxatdan o'tishda ko'rasiz), (3) ovoz uchinchi tomonga (Yandex, Rossiya) jo'natiladi.
+
+**Sozlash:**
+1. https://console.yandex.cloud ga kiring (Yandex ID yoki boshqa hisob bilan ro'yxatdan o'tish so'raladi).
+2. Yangi **bo'lim (folder)** yarating (yoki tayyorini oching) — sahifa manzilida yoki bo'lim sozlamalarida ko'rinadigan **Folder ID** ni nusxalang.
+3. **Xizmat hisoblari (Service accounts)** bo'limidan yangi xizmat hisobi yarating, unga `ai.speechkit-stt.user` (yoki shunga o'xshash SpeechKit) rolini bering.
+4. O'sha xizmat hisobi ichida **API-kalit (API key)** yarating va nusxalang (faqat bir marta to'liq ko'rsatiladi — darrov saqlab qo'ying).
+5. Render → **Environment** bo'limiga qo'shing: `STT_PROVIDER=yandex`, `YANDEX_STT_API_KEY=<nusxalangan kalit>`, `YANDEX_STT_FOLDER_ID=<Folder ID>`.
+6. Kompyuterda ishlatmoqchi bo'lsangiz, xuddi shu 3 qatorni `.env` fayliga yozing.
+
+Yandex konsoli ekranlari vaqt o'tishi bilan biroz o'zgarishi mumkin — biror qadamda tugmani topa olmasangiz, ekran rasmini yuboring, birga topamiz.

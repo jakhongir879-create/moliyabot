@@ -102,10 +102,17 @@ const config = {
   // Bir daqiqada bitta manzildan (IP) ruxsat etiladigan API so'rovlari soni
   apiRateLimit: Math.max(60, toInt(process.env.API_RATE_LIMIT, 400)),
 
-  // Ovozli xabarlarni matnga aylantirish (oflayn, Vosk). "off" bo'lsa, ovozli xabarlar o'chiriladi.
+  // Ovozli xabarlarni matnga aylantirish. "off" bo'lsa, ovozli xabarlar o'chiriladi.
   sttEnabled: String(process.env.STT || "auto").trim().toLowerCase() !== "off",
-  // Bitta ovozli xabarning eng uzun davomiyligi (soniya)
+  // "vosk" (bepul, oflayn, kamroq aniq) yoki "yandex" (pullik, internetga ulanadi, ancha aniqroq)
+  sttProvider: String(process.env.STT_PROVIDER || "vosk").trim().toLowerCase() === "yandex" ? "yandex" : "vosk",
+  // Bitta ovozli xabarning eng uzun davomiyligi (soniya). Yandex sinxron tanish 30 soniyadan oshmasligi kerak.
   sttMaxSeconds: Math.min(300, Math.max(5, toInt(process.env.STT_MAX_SECONDS, 60))),
+
+  // Yandex SpeechKit (ixtiyoriy, faqat STT_PROVIDER=yandex bo'lsa kerak). Https://console.yandex.cloud
+  yandexSttApiKey: String(process.env.YANDEX_STT_API_KEY || "").trim(),
+  yandexSttFolderId: String(process.env.YANDEX_STT_FOLDER_ID || "").trim(),
+  yandexSttLang: String(process.env.YANDEX_STT_LANG || "uz-UZ").trim(),
 
   // "auto": ngrok bo'lsa uni, bo'lmasa tools/cloudflared.exe ni o'zi ishga tushiradi. "off": tunnel ochilmaydi.
   tunnel: String(process.env.TUNNEL || "auto").trim().toLowerCase() === "off" ? "off" : "auto",

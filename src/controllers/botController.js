@@ -566,8 +566,9 @@ async function onVoice(ctx) {
     console.warn(`[ovoz] o'chiq: ${availability.reason}`);
     return ctx.reply("🎙 Ovozli xabarni tanish hozircha yoqilmagan. Iltimos, matn bilan yozing: <code>+500 ming savdo</code>", HTML);
   }
-  if (voice.duration > config.sttMaxSeconds) {
-    return ctx.reply(`🎙 Ovozli xabar juda uzun. ${config.sttMaxSeconds} soniyagacha, qisqa qilib yuboring.`);
+  const limit = stt.maxSeconds();
+  if (voice.duration > limit) {
+    return ctx.reply(`🎙 Ovozli xabar juda uzun. ${limit} soniyagacha, qisqa qilib yuboring.`);
   }
 
   await ctx.replyWithChatAction("typing").catch(() => undefined);

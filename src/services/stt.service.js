@@ -1,9 +1,13 @@
-// Ovozli xabarni matnga aylantiradi. Hammasi serverning o'zida (oflayn) ishlaydi: Vosk + o'zbek tili modeli.
-// Kerakli fayllar bo'lmasa ("npm run voice:setup" bilan yuklanadi), xizmat "o'chiq" turadi va bot faqat matn bilan ishlayveradi.
+// Ovozli xabarni matnga aylantiradi. Ikki xil usul bor:
+//   "vosk"   — kompyuter/serverning o'zida (oflayn, bepul), lekin haqiqiy nutqda aniqligi past.
+//   "yandex" — Yandex SpeechKit orqali (internetga ulanadi, pullik), ancha aniqroq.
+// Qaysi biri ishlatilishi STT_PROVIDER bilan tanlanadi (.env). Kerakli narsa bo'lmasa, xizmat "o'chiq" turadi
+// va bot buni tushunarli aytadi — bot va Mini App'ning boshqa qismlariga ta'sir qilmaydi.
 const fs = require("fs");
 const path = require("path");
 const config = require("../config/default");
 const { modelDir, libInfo } = require("../utils/sttPaths");
+const { transcribeYandex, MAX_SECONDS: YANDEX_MAX_SECONDS } = require("./sttProviders/yandex");
 
 const SAMPLE_RATE = 16000;
 const CHUNK_BYTES = 16000; // 0.5 soniya (16 kHz, 16 bit)
@@ -18,8 +22,7 @@ let queue = Promise.resolve();
 // Holat
 // ---------------------------------------------------------------
 
-function status() {
-  if (!config.sttEnabled) return { ok: false, reason: "STT=off qilib o'chirilgan" };
+function voskStatus() {
   const lib = libInfo();
   if (!lib) return { ok: false, reason: `bu tizim (${process.platform}-${process.arch}) qo'llab-quvvatlanmaydi` };
   if (!fs.existsSync(lib.file) || !fs.existsSync(path.join(modelDir, "am"))) {
@@ -28,10 +31,25 @@ function status() {
   return { ok: true, reason: "" };
 }
 
+function yandexStatus() {
+  if (!config.yandexSttApiKey || !config.yandexSttFolderId) {
+    return { ok: false, reason: "YANDEX_STT_API_KEY yoki YANDEX_STT_FOLDER_ID kiritilmagan (.env)" };
+  }
+  return { ok: true, reason: "" };
+}
+
+function status() {
+  if (!config.sttEnabled) return { ok: false, reason: "STT=off qilib o'chirilgan" };
+  return config.sttProvider === "yandex" ? yandexStatus() : voskStatus();
+}
+
 const isAvailable = () => status().ok;
 
+// Bitta ovozli xabarning eng uzun ruxsat etilgan davomiyligi (Yandex sinxron tanish 30 soniyadan oshmaydi)
+const maxSeconds = () => (config.sttProvider === "yandex" ? Math.min(config.sttMaxSeconds, YANDEX_MAX_SECONDS) : config.sttMaxSeconds);
+
 // ---------------------------------------------------------------
-// Vosk (koffi orqali)
+// Vosk (koffi orqali, oflayn)
 // ---------------------------------------------------------------
 
 function loadNative() {
@@ -91,9 +109,8 @@ const textOf = (json) => {
   }
 };
 
-// ---------------------------------------------------------------
-// Ovozni dekodlash: Telegram ovozli xabari = OGG (Opus) -> 16 kHz, 16 bit PCM
-// ---------------------------------------------------------------
+// Ovozni dekodlash: Telegram ovozli xabari = OGG (Opus) -> 16 kHz, 16 bit PCM (faqat Vosk uchun kerak;
+// Yandex OGG/Opus'ni to'g'ridan-to'g'ri qabul qiladi)
 
 function toPcm16(float32) {
   const out = Buffer.alloc(float32.length * 2);
@@ -135,11 +152,7 @@ async function decodeToPcm(buffer) {
   }
 }
 
-// ---------------------------------------------------------------
-// Asosiy funksiya
-// ---------------------------------------------------------------
-
-async function recognize(pcm) {
+async function recognizeVosk(pcm) {
   const n = loadNative();
   const rec = n.recNew(getModel(), SAMPLE_RATE);
   try {
@@ -155,15 +168,29 @@ async function recognize(pcm) {
   }
 }
 
-// OGG (Opus) ovoz fayli -> matn. Bir vaqtda bitta ovoz tanilib, qolganlari navbat kutadi.
+async function transcribeVosk(oggBuffer) {
+  const pcm = await decodeToPcm(oggBuffer);
+  if (!pcm.length) return "";
+  return recognizeVosk(pcm);
+}
+
+// ---------------------------------------------------------------
+// Asosiy funksiya
+// ---------------------------------------------------------------
+
+// OGG (Opus) ovoz fayli -> matn. Vosk CPU-bog'liq bo'lgani uchun bir vaqtda bitta ovoz tanilib, qolganlari
+// navbat kutadi; Yandex tarmoq so'rovi bo'lgani uchun navbat shart emas.
 function transcribe(oggBuffer) {
-  const job = queue.then(async () => {
-    const pcm = await decodeToPcm(oggBuffer);
-    if (!pcm.length) return "";
-    return recognize(pcm);
-  });
+  if (config.sttProvider === "yandex") {
+    return transcribeYandex(oggBuffer, {
+      apiKey: config.yandexSttApiKey,
+      folderId: config.yandexSttFolderId,
+      lang: config.yandexSttLang,
+    });
+  }
+  const job = queue.then(() => transcribeVosk(oggBuffer));
   queue = job.catch(() => undefined);
   return job;
 }
 
-module.exports = { status, isAvailable, transcribe, SAMPLE_RATE };
+module.exports = { status, isAvailable, transcribe, maxSeconds, SAMPLE_RATE };
