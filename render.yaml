@@ -10,7 +10,7 @@ services:
     # "free" - sinov uchun (15 daqiqa so'rov bo'lmasa uxlab qoladi). Doimiy ishlashi uchun "starter" (oyiga ~7$) tavsiya etiladi.
     plan: free
     branch: main
-    buildCommand: npm ci && npx prisma generate && npm run db:migrate
+    buildCommand: npm ci && npx prisma generate && npm run db:migrate && npm run voice:setup
     startCommand: npm start
     healthCheckPath: /health
     autoDeploy: true
