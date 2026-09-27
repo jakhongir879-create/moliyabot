@@ -23,6 +23,7 @@
     "demo:clear": "node prisma/demo.js clear"
   },
   "dependencies": {
+    "@google/genai": "^2.24.0",
     "@prisma/client": "6.19.3",
     "adm-zip": "^0.6.1",
     "compression": "^1.8.2",

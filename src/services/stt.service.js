@@ -8,6 +8,7 @@ const path = require("path");
 const config = require("../config/default");
 const { modelDir, libInfo } = require("../utils/sttPaths");
 const { transcribeYandex, MAX_SECONDS: YANDEX_MAX_SECONDS } = require("./sttProviders/yandex");
+const { transcribeGemini } = require("./sttProviders/gemini");
 
 const SAMPLE_RATE = 16000;
 const CHUNK_BYTES = 16000; // 0.5 soniya (16 kHz, 16 bit)
@@ -38,9 +39,16 @@ function yandexStatus() {
   return { ok: true, reason: "" };
 }
 
+function geminiStatus() {
+  if (!config.geminiApiKey) return { ok: false, reason: "GEMINI_API_KEY kiritilmagan (.env)" };
+  return { ok: true, reason: "" };
+}
+
 function status() {
   if (!config.sttEnabled) return { ok: false, reason: "STT=off qilib o'chirilgan" };
-  return config.sttProvider === "yandex" ? yandexStatus() : voskStatus();
+  if (config.sttProvider === "yandex") return yandexStatus();
+  if (config.sttProvider === "gemini") return geminiStatus();
+  return voskStatus();
 }
 
 const isAvailable = () => status().ok;

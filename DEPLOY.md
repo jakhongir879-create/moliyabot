@@ -187,3 +187,16 @@ Ovoz Yandex serveriga yuboriladi va u yerda tanib olinadi — ancha aniqroq, lek
 6. Kompyuterda ishlatmoqchi bo'lsangiz, xuddi shu 3 qatorni `.env` fayliga yozing.
 
 Yandex konsoli ekranlari vaqt o'tishi bilan biroz o'zgarishi mumkin — biror qadamda tugmani topa olmasangiz, ekran rasmini yuboring, birga topamiz.
+
+### 7.3. Aniqroq, oson: Google Gemini
+
+Yandex kabi aniq, lekin sozlash ancha oson: **karta shart emas**, faqat Google (Gmail) hisobi kifoya, bepul kvota bor (kuniga bir necha yuz ovozli xabar uchun yetadi; ko'p ishlatilsa, keyinroq to'lov ulash mumkin).
+
+**Sozlash:**
+1. https://aistudio.google.com/apikey ga kiring (Gmail hisobingiz bilan).
+2. **Create API key** tugmasini bosing.
+3. Yaratilgan kalitni nusxalang.
+4. Render → **Environment**: `STT_PROVIDER=gemini`, `GEMINI_API_KEY=<nusxalangan kalit>`.
+5. Kompyuterda ishlatmoqchi bo'lsangiz, xuddi shu 2 qatorni `.env` fayliga yozing.
+
+**Diqqat:** ovoz Google serveriga yuboriladi (uchinchi tomon). Yandex'dan farqli, bitta xabar 30 soniyadan uzun bo'lsa ham ishlayveradi.

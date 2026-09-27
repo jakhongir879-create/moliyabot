@@ -123,7 +123,7 @@ ngrok birinchi ochishda «You are about to visit...» sahifasini ko'rsatishi mum
 
 Ovoz tanish uchun bir marta fayllar yuklab olinadi (~66 MB): `npm run voice:setup`, so'ng botni qayta ishga tushiring. Fayllar `models/` papkasiga tushadi (GitHub'ga yuborilmaydi). O'chirish: `.env` ga `STT=off`. Uzunligi: eng ko'pi bilan 60 soniya (`STT_MAX_SECONDS`).
 
-Bepul usul tabiiy (uzun, erkin) gapda ko'p xato qiladi. Aniqrog'i kerak bo'lsa — Yandex SpeechKit (pullik, internetga ulanadi): [DEPLOY.md](DEPLOY.md#7-ovozli-xabarlar) dagi 7.2-bo'lim.
+Bepul usul tabiiy (uzun, erkin) gapda ko'p xato qiladi. Aniqrog'i kerak bo'lsa: [DEPLOY.md](DEPLOY.md#7-ovozli-xabarlar) dagi 7.2 (Yandex, pullik/karta kerak) yoki 7.3 (Google Gemini, bepul kvota, karta shart emas) bo'limi.
 
 **Buyruqlar:** `/kirim` `/chiqim` `/balans` `/hisobot` `/bugun` `/qarzlar` `/ilova` `/yordam`
 

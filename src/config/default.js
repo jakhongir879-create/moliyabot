@@ -104,8 +104,10 @@ const config = {
 
   // Ovozli xabarlarni matnga aylantirish. "off" bo'lsa, ovozli xabarlar o'chiriladi.
   sttEnabled: String(process.env.STT || "auto").trim().toLowerCase() !== "off",
-  // "vosk" (bepul, oflayn, kamroq aniq) yoki "yandex" (pullik, internetga ulanadi, ancha aniqroq)
-  sttProvider: String(process.env.STT_PROVIDER || "vosk").trim().toLowerCase() === "yandex" ? "yandex" : "vosk",
+  // "vosk" (bepul, oflayn, kamroq aniq) | "yandex" (pullik, aniqroq) | "gemini" (pullik/bepul kvota, aniqroq)
+  sttProvider: ["yandex", "gemini"].includes(String(process.env.STT_PROVIDER || "").trim().toLowerCase())
+    ? String(process.env.STT_PROVIDER).trim().toLowerCase()
+    : "vosk",
   // Bitta ovozli xabarning eng uzun davomiyligi (soniya). Yandex sinxron tanish 30 soniyadan oshmasligi kerak.
   sttMaxSeconds: Math.min(300, Math.max(5, toInt(process.env.STT_MAX_SECONDS, 60))),
 
@@ -113,6 +115,10 @@ const config = {
   yandexSttApiKey: String(process.env.YANDEX_STT_API_KEY || "").trim(),
   yandexSttFolderId: String(process.env.YANDEX_STT_FOLDER_ID || "").trim(),
   yandexSttLang: String(process.env.YANDEX_STT_LANG || "uz-UZ").trim(),
+
+  // Google Gemini (ixtiyoriy, faqat STT_PROVIDER=gemini bo'lsa kerak). Https://aistudio.google.com/apikey
+  geminiApiKey: String(process.env.GEMINI_API_KEY || "").trim(),
+  geminiSttModel: String(process.env.GEMINI_STT_MODEL || "gemini-flash-latest").trim(),
 
   // "auto": ngrok bo'lsa uni, bo'lmasa tools/cloudflared.exe ni o'zi ishga tushiradi. "off": tunnel ochilmaydi.
   tunnel: String(process.env.TUNNEL || "auto").trim().toLowerCase() === "off" ? "off" : "auto",
