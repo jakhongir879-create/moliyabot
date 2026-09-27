@@ -271,7 +271,7 @@ function help(ctx) {
     "",
     ...(stt.isAvailable()
       ? [
-          "🎙 <b>Ovozli xabar:</b> «besh yuz ming so'm savdo» deb aytib yuboring. Eshitganimni ko'rsataman, siz tasdiqlaysiz.",
+          "🎙 <b>Ovozli xabar:</b> «besh yuz ming so'm savdo» deb aytib yuboring. Bir xabarda faqat bitta amaliyot (bitta summa) ayting. Eshitganimni ko'rsataman, siz tasdiqlaysiz.",
           "",
         ]
       : []),

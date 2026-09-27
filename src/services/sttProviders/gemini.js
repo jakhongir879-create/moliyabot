@@ -4,7 +4,10 @@ const { GoogleGenAI } = require("@google/genai");
 
 const PROMPT =
   "Ushbu ovozli xabarni so'zma-so'z, o'zbek tilida (lotin yozuvida) yozib ber. " +
-  "Faqat eshitilgan gapning o'zini yoz — kirish so'zlari, izoh yoki tirnoq belgisi qo'shma.";
+  "Faqat eshitilgan gapning o'zini yoz — kirish so'zlari, izoh yoki tirnoq belgisi qo'shma. " +
+  "Bu moliyaviy (pul) xabar: sonlarni va ularning o'lchov birligini (ming/million/milliard/so'm/dollar) " +
+  "AYNAN eshitilganidek, birortasini ham tashlab ketmasdan yoz. Noaniq joy bo'lsa, eng yaqin eshitilgan " +
+  "variantni yoz — hech qachon o'zingdan gap qo'shmagin yoki to'qimagin.";
 
 let client = null;
 let clientKey = null;
@@ -24,6 +27,7 @@ async function transcribeGemini(oggBuffer, { apiKey, model }) {
     response = await ai.models.generateContent({
       model,
       contents: [{ text: PROMPT }, { inlineData: { mimeType: "audio/ogg", data: oggBuffer.toString("base64") } }],
+      config: { temperature: 0 },
     });
   } catch (err) {
     throw new Error(`Gemini bilan bog'lanib bo'lmadi: ${err.message}`);
