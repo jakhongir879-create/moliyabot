@@ -163,7 +163,8 @@ async function main() {
     line(`  Mini App     : ${tunnel.describe()}`);
   }
   const voice = require("./services/stt.service").status();
-  line(`  Ovozli xabar : ${voice.ok ? "✅ yoqilgan (o'zbek tili, oflayn)" : `o'chiq — ${voice.reason}`}`);
+  const PROVIDER_LABEL = { vosk: "Vosk, oflayn", yandex: "Yandex SpeechKit", gemini: "Google Gemini" };
+  line(`  Ovozli xabar : ${voice.ok ? `✅ yoqilgan (${PROVIDER_LABEL[config.sttProvider] || config.sttProvider})` : `o'chiq — ${voice.reason}`}`);
   rule();
   if (!ownerExists && botInfo) {
     line();
